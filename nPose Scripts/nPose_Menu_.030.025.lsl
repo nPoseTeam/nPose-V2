@@ -304,9 +304,6 @@ BuildMenus(list cardNames) {//builds the user defined menu buttons
             }
         }
     }
-    if(defaultPoseNcName) {
-        llMessageLinked(LINK_SET, DOPOSE, defaultPoseNcName, NULL_KEY);
-    }
 }
 
 default{
@@ -504,12 +501,7 @@ default{
             }
 //end do the selection
         }
-        else if(num == DIALOG_TIMEOUT) {//menu not clicked and dialog timed out
-            if((cur2default == "on") && (llGetObjectPrimCount(llGetKey()) == llGetNumberOfPrims()) && (defaultPoseNcName != "")) {
-                llMessageLinked(LINK_SET, DOPOSE, defaultPoseNcName, NULL_KEY);
-            }
 //begin handle link message inputs
-        }
         else if(num==OPTIONS_NUM) {
             //save new option(s) from LINKMSG
             list optionsToSet = llParseStringKeepNulls(str, ["~"], []);
@@ -630,11 +622,6 @@ default{
         }
         if(change & CHANGED_OWNER) {
             llResetScript();
-        }
-        if((change & CHANGED_LINK) && (cur2default == "on")
-         && (llGetObjectPrimCount(llGetKey()) == llGetNumberOfPrims())
-         && (defaultPoseNcName != "")) {
-            llMessageLinked(LINK_SET, DOPOSE, defaultPoseNcName, NULL_KEY);
         }
     }
 

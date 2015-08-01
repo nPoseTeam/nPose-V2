@@ -36,6 +36,7 @@ The nPose scripts are free to be copied, modified, and redistributed, subject to
 #define UNSIT -222
 #define OPTIONS -240
 #define DOMENU_ACCESSCTRL -801
+#define DIALOG_TIMEOUT -902
 #define HUD_REQUEST -999
 //define block end
 
@@ -49,13 +50,13 @@ integer chatchannel;
 integer explicitFlag;
 key hudId;
 string lastDoPoseCardName;
-string lastDoPoseAlias;
-string lastDoPosePlaceholder;
 key lastDoPoseCardId;
 key lastDoPoseAvatarId;
+string defaultPoseNcName;
 list slots;  //one STRIDE = [animationName, posVector, rotVector, facials, sitterKey, SATMSG, NOTSATMSG, seatName]
 
 string curmenuonsit = "off"; //default menuonsit option
+string cur2default = "off";  //default action to revert back to default pose when last sitter has stood
 
 string NC_READER_CONTENT_SEPARATOR="%&§";
 
@@ -335,8 +336,9 @@ default{
         for(n = 0; n < stop; n++) {
             string cardName = llGetInventoryName(INVENTORY_NOTECARD, n);
             if((llSubStringIndex(cardName, DEFAULT_PREFIX) == 0) || (llSubStringIndex(cardName, CARD_PREFIX) == 0)) {
+            defaultPoseNcName=cardName;
                 llSleep(1.0); //be sure that the NC reader script finished resetting
-                llMessageLinked(LINK_SET, DOPOSE, cardName + NC_READER_CONTENT_SEPARATOR + cardName, NULL_KEY);
+                llMessageLinked(LINK_SET, DOPOSE, defaultPoseNcName, NULL_KEY);
                 return;
             }
         }
@@ -377,8 +379,6 @@ default{
             if(num==DOPOSE_READER) {
                 if (llGetInventoryType(ncName) == INVENTORY_NOTECARD){ //sanity
                     lastDoPoseCardName=ncName;
-                    lastDoPoseAlias=llList2String(allData, 1);
-                    lastDoPosePlaceholder=llList2String(allData, 2);
                     lastDoPoseCardId=llGetInventoryKey(lastDoPoseCardName);
                     lastDoPoseAvatarId=id;
                 }
@@ -457,6 +457,14 @@ default{
                 if(optionItem == "menuonsit") {
                     curmenuonsit = optionSetting;
                 }
+                else if(optionItem == "2default") {
+                cur2default = optionSetting;
+                }
+            }
+        }
+        else if(num == DIALOG_TIMEOUT) {//menu not clicked and dialog timed out
+            if((cur2default == "on") && (llGetObjectPrimCount(llGetKey()) == llGetNumberOfPrims()) && (defaultPoseNcName != "")) {
+                llMessageLinked(LINK_SET, DOPOSE, defaultPoseNcName, NULL_KEY);
             }
         }
         else if(num == MEMORY_USAGE) {
@@ -528,8 +536,7 @@ default{
                 if(lastDoPoseCardId!=llGetInventoryKey(lastDoPoseCardName)) {
                     //the last used nc changed, "redo" the nc
                     llSleep(1.0); //be sure that the NC reader script finished resetting
-                    llMessageLinked(LINK_SET, DOPOSE, llList2CSV([lastDoPoseCardName, lastDoPoseAlias,
-                     lastDoPosePlaceholder]), lastDoPoseAvatarId); 
+                    llMessageLinked(LINK_SET, DOPOSE, lastDoPoseCardName, lastDoPoseAvatarId); 
                 }
                 else {
                     llResetScript();
@@ -542,6 +549,9 @@ default{
         if(change & CHANGED_LINK) {
             llMessageLinked(LINK_SET, SEND_CHATCHANNEL, (string)chatchannel, NULL_KEY); //let our scripts know the chat channel for props and adjusters
             assignSlots();
+            if(cur2default == "on" && llGetObjectPrimCount(llGetKey()) == llGetNumberOfPrims() && defaultPoseNcName != "") {
+                llMessageLinked(LINK_SET, DOPOSE, defaultPoseNcName, NULL_KEY);
+            }
         }
         if(change & CHANGED_REGION) {
             llMessageLinked(LINK_SET, SEAT_UPDATE, llDumpList2String(slots, "^"), NULL_KEY);
