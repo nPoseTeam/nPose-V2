@@ -48,9 +48,9 @@ integer rezadjusters;
 integer chatchannel;
 integer explicitFlag;
 key hudId;
-string lastDoPoseCardName;
-key lastDoPoseCardId;
-key lastDoPoseAvatarId;
+string lastAssignSlotsCardName;
+key lastAssignSlotsCardId;
+key lastAssignSlotsAvatarId;
 list slots;  //one STRIDE = [animationName, posVector, rotVector, facials, sitterKey, SATMSG, NOTSATMSG, seatName]
 
 string curmenuonsit = "off"; //default menuonsit option
@@ -381,17 +381,18 @@ default{
                 }
             }
             if(num==DOPOSE_READER) {
-                if (llGetInventoryType(ncName) == INVENTORY_NOTECARD){ //sanity
-                    lastDoPoseCardName=ncName;
-                    lastDoPoseCardId=llGetInventoryKey(lastDoPoseCardName);
-                    lastDoPoseAvatarId=id;
-                }
+                //Leona: Is this still valid or should this also be made on an asignSlots call?
                 if(rezadjusters) {
                     llMessageLinked(LINK_SET, REZ_ADJUSTERS, "RezAdjuster", "");    //card has been read and we have adjusters, send message to slave script.
                 }
             }
             if(run_assignSlots) {
                 assignSlots();
+                if (llGetInventoryType(ncName) == INVENTORY_NOTECARD){ //sanity
+                    lastAssignSlotsCardName=ncName;
+                    lastAssignSlotsCardId=llGetInventoryKey(lastAssignSlotsCardName);
+                    lastAssignSlotsAvatarId=id;
+                }
             }
         }
         else if(num == ADJUST) { 
@@ -528,11 +529,11 @@ default{
 
     changed(integer change) {
         if(change & CHANGED_INVENTORY) {
-            if(llGetInventoryType(lastDoPoseCardName) == INVENTORY_NOTECARD) {
-                if(lastDoPoseCardId!=llGetInventoryKey(lastDoPoseCardName)) {
+            if(llGetInventoryType(lastAssignSlotsCardName) == INVENTORY_NOTECARD) {
+                if(lastAssignSlotsCardId!=llGetInventoryKey(lastAssignSlotsCardName)) {
                     //the last used nc changed, "redo" the nc
                     llSleep(1.0); //be sure that the NC reader script finished resetting
-                    llMessageLinked(LINK_SET, DOPOSE, lastDoPoseCardName, lastDoPoseAvatarId); 
+                    llMessageLinked(LINK_SET, DOPOSE, lastAssignSlotsCardName, lastAssignSlotsAvatarId); 
                 }
                 else {
                     llResetScript();
