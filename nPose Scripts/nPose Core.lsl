@@ -301,7 +301,7 @@ ProcessLine(string sLine, key av, string ncName, string menuName) {
             lmid = (key)llList2String(params, 3);
         }
         else {
-            lmid = (key)llList2String(slots, (slotMax-1)*STRIDE+4);
+            lmid = av;
         }
         llMessageLinked(LINK_SET, num, llList2String(params, 2), lmid);
         llSleep((float)llList2String(params, 4));
