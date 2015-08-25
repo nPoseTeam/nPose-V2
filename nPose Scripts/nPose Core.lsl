@@ -387,10 +387,8 @@ default{
                     lastAssignSlotsCardId=llGetInventoryKey(lastAssignSlotsCardName);
                     lastAssignSlotsAvatarId=id;
                 }
-            }
-            if(num==DOPOSE_READER) {
-                //Leona: Is this still valid or should this also be made on an asignSlots call?
                 if(rezadjusters) {
+                    llRegionSay(chatchannel, "adjuster_die");
                     llMessageLinked(LINK_SET, REZ_ADJUSTERS, "RezAdjuster", "");    //card has been read and we have adjusters, send message to slave script.
                 }
             }
