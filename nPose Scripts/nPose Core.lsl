@@ -380,18 +380,18 @@ default{
                     run_assignSlots = TRUE;
                 }
             }
-            if(num==DOPOSE_READER) {
-                //Leona: Is this still valid or should this also be made on an asignSlots call?
-                if(rezadjusters) {
-                    llMessageLinked(LINK_SET, REZ_ADJUSTERS, "RezAdjuster", "");    //card has been read and we have adjusters, send message to slave script.
-                }
-            }
             if(run_assignSlots) {
                 assignSlots();
                 if (llGetInventoryType(ncName) == INVENTORY_NOTECARD){ //sanity
                     lastAssignSlotsCardName=ncName;
                     lastAssignSlotsCardId=llGetInventoryKey(lastAssignSlotsCardName);
                     lastAssignSlotsAvatarId=id;
+                }
+            }
+            if(num==DOPOSE_READER) {
+                //Leona: Is this still valid or should this also be made on an asignSlots call?
+                if(rezadjusters) {
+                    llMessageLinked(LINK_SET, REZ_ADJUSTERS, "RezAdjuster", "");    //card has been read and we have adjusters, send message to slave script.
                 }
             }
         }
