@@ -132,18 +132,14 @@ SetAvatarOffset(key avatar, vector offset) {
     avatarOffsets = llListReplaceList(avatarOffsets, [avatar, offset], avatarOffsetsIndex, avatarOffsetsIndex+1);
 }
 
-
-RezNextAdjuster() {
-    llRezObject("Adjuster", llGetPos() + <0,0,1>, ZERO_VECTOR, llGetRot(), chatchannel);
-}
-
-ChatAdjusterPos(integer slotnum) {
-    integer index = slotnum * stride;
-    vector pos = llGetPos() + llList2Vector(slots, index + 1) * llGetRot();
-    rotation rot = llList2Rot(slots, index + 2) * llGetRot();
-    string out = llList2String(adjusters, slotnum) + "|posrot|" + (string)pos + "|" + (string)rot;
-//    llOwnerSay("chatting out: " + out);
-    llRegionSay(chatchannel, out);
+RezAllAdjusters() {
+    integer index;
+    integer stop = llGetListLength(slots)/8;
+    for(; index<stop; ++index) {
+        vector pos = llGetPos() + llList2Vector(slots, index * 8 + 1) * llGetRot();
+        rotation rot = llList2Rot(slots, index * 8 + 2) * llGetRot();
+        llRezObject("Adjuster", pos, ZERO_VECTOR, rot, chatchannel);
+    }
 }
 
 default {
@@ -314,7 +310,7 @@ default {
             llSay(chatchannel, "adjuster_die");
             adjusters = [];
             if(llGetInventoryType("Adjuster") & INVENTORY_OBJECT) {
-                RezNextAdjuster();
+                RezAllAdjusters();
             }
             else {
                 llRegionSayTo(llGetOwner(), 0, "Seat Adjustment disabled.  No Adjuster object found in" + llGetObjectName()+ ".");
@@ -327,7 +323,7 @@ default {
         }
         else if (num == REZ_ADJUSTERS && str == "RezAdjuster"){    //got a new pose so update adjusters.
             adjusters = [];
-            RezNextAdjuster();
+            RezAllAdjusters();
         }else if(num == ADJUSTER_REPORT) {    //heard from an adjuster so a new position must be used, upate slots and chat out new position.
             integer index = llListFindList(adjusters, [id]);
             if(index != -1) {
@@ -514,12 +510,6 @@ default {
     object_rez(key id) {
         if(llKey2Name(id) == "Adjuster") {
             adjusters += [id];
-            integer adjLen = llGetListLength(adjusters);
-            ChatAdjusterPos(adjLen - 1); 
-            
-            if(adjLen < (llGetListLength(slots)/8)) { 
-                RezNextAdjuster();
-            }
         }
     }
 
