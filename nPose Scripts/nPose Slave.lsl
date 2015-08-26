@@ -132,18 +132,19 @@ SetAvatarOffset(key avatar, vector offset) {
     avatarOffsets = llListReplaceList(avatarOffsets, [avatar, offset], avatarOffsetsIndex, avatarOffsetsIndex+1);
 }
 
+RezAllAdjusters() {
+    if(llGetInventoryType("Adjuster") != INVENTORY_OBJECT) {
+        llRegionSayTo(llGetOwner(), 0, "Seat Adjustment disabled. No Adjuster object found in " + llGetObjectName()+ ".");
+        return;
+    }
 
-RezNextAdjuster() {
-    llRezObject("Adjuster", llGetPos() + <0,0,1>, ZERO_VECTOR, llGetRot(), chatchannel);
-}
-
-ChatAdjusterPos(integer slotnum) {
-    integer index = slotnum * stride;
-    vector pos = llGetPos() + llList2Vector(slots, index + 1) * llGetRot();
-    rotation rot = llList2Rot(slots, index + 2) * llGetRot();
-    string out = llList2String(adjusters, slotnum) + "|posrot|" + (string)pos + "|" + (string)rot;
-//    llOwnerSay("chatting out: " + out);
-    llRegionSay(chatchannel, out);
+    integer index;
+    integer stop = llGetListLength(slots)/8;
+    for(; index<stop; ++index) {
+        vector pos = llGetPos() + llList2Vector(slots, index * 8 + 1) * llGetRot();
+        rotation rot = llList2Rot(slots, index * 8 + 2) * llGetRot();
+        llRezObject("Adjuster", pos, ZERO_VECTOR, rot, (chatchannel << 8) + index);
+    }
 }
 
 default {
@@ -313,12 +314,7 @@ default {
         else if(num == ADJUST) { //adjust has been chosen from the menu
             llSay(chatchannel, "adjuster_die");
             adjusters = [];
-            if(llGetInventoryType("Adjuster") & INVENTORY_OBJECT) {
-                RezNextAdjuster();
-            }
-            else {
-                llRegionSayTo(llGetOwner(), 0, "Seat Adjustment disabled.  No Adjuster object found in" + llGetObjectName()+ ".");
-            }
+            RezAllAdjusters();
         }
         else if(num == STOPADJUST) { //stopadjust has been chosen from the menu
             llMessageLinked(LINK_SET, DUMP, "", "");
@@ -327,16 +323,15 @@ default {
         }
         else if (num == REZ_ADJUSTERS && str == "RezAdjuster"){    //got a new pose so update adjusters.
             adjusters = [];
-            RezNextAdjuster();
+            RezAllAdjusters();
         }else if(num == ADJUSTER_REPORT) {    //heard from an adjuster so a new position must be used, upate slots and chat out new position.
-            integer index = llListFindList(adjusters, [id]);
-            if(index != -1) {
+            if(~llListFindList(adjusters, [id])) {
                 string primName = llGetObjectName();
                 llSetObjectName(llGetLinkName(1));
                 list params = llParseString2List(str, ["|"], []);
                 vector newpos = (vector)llList2String(params, 0) - llGetPos();
                 newpos = newpos / llGetRot();
-                integer slotsindex = index * stride;
+                integer slotsindex = (integer)llList2String(params, 2) * stride;
                 rotation newrot = (rotation)llList2String(params, 1) / llGetRot();
                 slots = llListReplaceList(slots, [newpos, newrot], slotsindex + 1, slotsindex + 2);
                 llRegionSayTo(llGetOwner(), 0, "SCHMOE and SCHMO lines will be reported as ANIM.  Be sure to replace if needed.");
@@ -514,12 +509,6 @@ default {
     object_rez(key id) {
         if(llKey2Name(id) == "Adjuster") {
             adjusters += [id];
-            integer adjLen = llGetListLength(adjusters);
-            ChatAdjusterPos(adjLen - 1); 
-            
-            if(adjLen < (llGetListLength(slots)/8)) { 
-                RezNextAdjuster();
-            }
         }
     }
 

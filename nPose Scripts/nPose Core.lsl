@@ -39,6 +39,8 @@ The nPose scripts are free to be copied, modified, and redistributed, subject to
 #define HUD_REQUEST -999
 //define block end
 
+string CHATCHANNEL_PREFIX="0x7F";
+
 integer slotMax;
 //integer curPrimCount;
 //integer lastPrimCount;
@@ -48,9 +50,9 @@ integer rezadjusters;
 integer chatchannel;
 integer explicitFlag;
 key hudId;
-string lastDoPoseCardName;
-key lastDoPoseCardId;
-key lastDoPoseAvatarId;
+string lastAssignSlotsCardName;
+key lastAssignSlotsCardId;
+key lastAssignSlotsAvatarId;
 list slots;  //one STRIDE = [animationName, posVector, rotVector, facials, sitterKey, SATMSG, NOTSATMSG, seatName]
 
 string curmenuonsit = "off"; //default menuonsit option
@@ -301,7 +303,7 @@ ProcessLine(string sLine, key av, string ncName, string menuName) {
             lmid = (key)llList2String(params, 3);
         }
         else {
-            lmid = (key)llList2String(slots, (slotMax-1)*STRIDE+4);
+            lmid = av;
         }
         llMessageLinked(LINK_SET, num, llList2String(params, 2), lmid);
         llSleep((float)llList2String(params, 4));
@@ -331,7 +333,7 @@ default{
         for(; n<=llGetNumberOfPrims(); ++n) {
            llLinkSitTarget(n,<0.0,0.0,0.5>,ZERO_ROTATION);
         }
-        chatchannel = (integer)("0x" + llGetSubString((string)llGetKey(), 0, 7));
+        chatchannel = (integer)(CHATCHANNEL_PREFIX + llGetSubString((string)llGetKey(), 0, 5));
         llMessageLinked(LINK_SET, SEND_CHATCHANNEL, (string)chatchannel, NULL_KEY); //let our scripts know the chat channel for props and adjusters
         integer listener = llListen(chatchannel, "", "", "");
         //the nPose Menu will do the same, so this should basically only run if there is no nPose menu script in this build
@@ -380,18 +382,17 @@ default{
                     run_assignSlots = TRUE;
                 }
             }
-            if(num==DOPOSE_READER) {
-                if (llGetInventoryType(ncName) == INVENTORY_NOTECARD){ //sanity
-                    lastDoPoseCardName=ncName;
-                    lastDoPoseCardId=llGetInventoryKey(lastDoPoseCardName);
-                    lastDoPoseAvatarId=id;
-                }
-                if(rezadjusters) {
-                    llMessageLinked(LINK_SET, REZ_ADJUSTERS, "RezAdjuster", "");    //card has been read and we have adjusters, send message to slave script.
-                }
-            }
             if(run_assignSlots) {
                 assignSlots();
+                if (llGetInventoryType(ncName) == INVENTORY_NOTECARD){ //sanity
+                    lastAssignSlotsCardName=ncName;
+                    lastAssignSlotsCardId=llGetInventoryKey(lastAssignSlotsCardName);
+                    lastAssignSlotsAvatarId=id;
+                }
+                if(rezadjusters) {
+                    llRegionSay(chatchannel, "adjuster_die");
+                    llMessageLinked(LINK_SET, REZ_ADJUSTERS, "RezAdjuster", "");    //card has been read and we have adjusters, send message to slave script.
+                }
             }
         }
         else if(num == ADJUST) { 
@@ -528,11 +529,11 @@ default{
 
     changed(integer change) {
         if(change & CHANGED_INVENTORY) {
-            if(llGetInventoryType(lastDoPoseCardName) == INVENTORY_NOTECARD) {
-                if(lastDoPoseCardId!=llGetInventoryKey(lastDoPoseCardName)) {
+            if(llGetInventoryType(lastAssignSlotsCardName) == INVENTORY_NOTECARD) {
+                if(lastAssignSlotsCardId!=llGetInventoryKey(lastAssignSlotsCardName)) {
                     //the last used nc changed, "redo" the nc
                     llSleep(1.0); //be sure that the NC reader script finished resetting
-                    llMessageLinked(LINK_SET, DOPOSE, lastDoPoseCardName, lastDoPoseAvatarId); 
+                    llMessageLinked(LINK_SET, DOPOSE, lastAssignSlotsCardName, lastAssignSlotsAvatarId); 
                 }
                 else {
                     llResetScript();
