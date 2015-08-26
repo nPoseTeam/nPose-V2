@@ -1,7 +1,7 @@
 integer chatchannel = 0;
 integer slotid = 0;
 
-float timeout = 2.0;
+float timeout = 0.1;
 vector pos = ZERO_VECTOR;
 rotation rot = ZERO_ROTATION;
 
@@ -13,14 +13,16 @@ default
     {
         if (param)
         {
-            chatchannel = param;
+            chatchannel = 0x7F000000 + (param >> 8);
+            slotid = param & 0xFF;
+            llSetObjectDesc((string)slotid);
             llListen(chatchannel, "", "", "");
             llSetTimerEvent(timeout);
         }
     }
 
     touch_start(integer total_number){
-        llSay(chatchannel, (string)pos + "|" + (string)rot);
+        llSay(chatchannel, (string)pos + "|" + (string)rot + "|" + (string)slotid);
     }
 
     listen(integer channel, string name, key id, string message)
@@ -77,7 +79,7 @@ default
         
         if (chat_out)
         {
-            llSay(chatchannel, (string)pos + "|" + (string)rot);
+            llSay(chatchannel, (string)pos + "|" + (string)rot + "|" + (string)slotid);
         }
     }
 }

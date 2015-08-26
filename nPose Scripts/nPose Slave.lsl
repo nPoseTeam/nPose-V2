@@ -143,7 +143,7 @@ RezAllAdjusters() {
     for(; index<stop; ++index) {
         vector pos = llGetPos() + llList2Vector(slots, index * 8 + 1) * llGetRot();
         rotation rot = llList2Rot(slots, index * 8 + 2) * llGetRot();
-        llRezObject("Adjuster", pos, ZERO_VECTOR, rot, chatchannel);
+        llRezObject("Adjuster", pos, ZERO_VECTOR, rot, (chatchannel << 8) + index);
     }
 }
 
@@ -325,14 +325,13 @@ default {
             adjusters = [];
             RezAllAdjusters();
         }else if(num == ADJUSTER_REPORT) {    //heard from an adjuster so a new position must be used, upate slots and chat out new position.
-            integer index = llListFindList(adjusters, [id]);
-            if(index != -1) {
+            if(~llListFindList(adjusters, [id])) {
                 string primName = llGetObjectName();
                 llSetObjectName(llGetLinkName(1));
                 list params = llParseString2List(str, ["|"], []);
                 vector newpos = (vector)llList2String(params, 0) - llGetPos();
                 newpos = newpos / llGetRot();
-                integer slotsindex = index * stride;
+                integer slotsindex = (integer)llList2String(params, 2) * stride;
                 rotation newrot = (rotation)llList2String(params, 1) / llGetRot();
                 slots = llListReplaceList(slots, [newpos, newrot], slotsindex + 1, slotsindex + 2);
                 llRegionSayTo(llGetOwner(), 0, "SCHMOE and SCHMO lines will be reported as ANIM.  Be sure to replace if needed.");

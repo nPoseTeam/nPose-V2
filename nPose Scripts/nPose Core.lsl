@@ -39,6 +39,8 @@ The nPose scripts are free to be copied, modified, and redistributed, subject to
 #define HUD_REQUEST -999
 //define block end
 
+string CHATCHANNEL_PREFIX="0x7F";
+
 integer slotMax;
 //integer curPrimCount;
 //integer lastPrimCount;
@@ -331,7 +333,7 @@ default{
         for(; n<=llGetNumberOfPrims(); ++n) {
            llLinkSitTarget(n,<0.0,0.0,0.5>,ZERO_ROTATION);
         }
-        chatchannel = (integer)("0x" + llGetSubString((string)llGetKey(), 0, 7));
+        chatchannel = (integer)(CHATCHANNEL_PREFIX + llGetSubString((string)llGetKey(), 0, 5));
         llMessageLinked(LINK_SET, SEND_CHATCHANNEL, (string)chatchannel, NULL_KEY); //let our scripts know the chat channel for props and adjusters
         integer listener = llListen(chatchannel, "", "", "");
         //the nPose Menu will do the same, so this should basically only run if there is no nPose menu script in this build
