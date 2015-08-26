@@ -133,6 +133,11 @@ SetAvatarOffset(key avatar, vector offset) {
 }
 
 RezAllAdjusters() {
+    if(llGetInventoryType("Adjuster") != INVENTORY_OBJECT) {
+        llRegionSayTo(llGetOwner(), 0, "Seat Adjustment disabled. No Adjuster object found in " + llGetObjectName()+ ".");
+        return;
+    }
+
     integer index;
     integer stop = llGetListLength(slots)/8;
     for(; index<stop; ++index) {
@@ -309,12 +314,7 @@ default {
         else if(num == ADJUST) { //adjust has been chosen from the menu
             llSay(chatchannel, "adjuster_die");
             adjusters = [];
-            if(llGetInventoryType("Adjuster") & INVENTORY_OBJECT) {
-                RezAllAdjusters();
-            }
-            else {
-                llRegionSayTo(llGetOwner(), 0, "Seat Adjustment disabled.  No Adjuster object found in" + llGetObjectName()+ ".");
-            }
+            RezAllAdjusters();
         }
         else if(num == STOPADJUST) { //stopadjust has been chosen from the menu
             llMessageLinked(LINK_SET, DUMP, "", "");
