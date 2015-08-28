@@ -219,8 +219,8 @@ ProcessLine(string sLine, key av, string ncName, string menuName) {
         /*This changes the animation of a single sitter without affectiong any of the other animations.
 
         The syntax is as follows:
-        SCHMO|seat#[|animation[|<0,0,0>[|<0,0,0>[|facial[|seat name]]]]]
-        SCHMOE|seat#[|animation[|<0,0,0>[|<0,0,0>[|facial[|seat name]]]]]
+        SCHMO|seat#|animation|position|rotation|facial|seatName
+        SCHMOE|seat#|animation|position|rotation|facial|seatName
 
         seat# = number value of the seat to be replaced.
         animation = inventory name of animation
