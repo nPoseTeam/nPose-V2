@@ -45,6 +45,7 @@ list REPLACE_NUM=[
 	999999, "REQUEST_CHATCHANNEL", "slave sent request to core to get chatChannel", 
 	69696969, "myChannel", "adjuster hud is on this channel and communicates with the receiver/sender script in the adjuster prim.", 
 	
+	-222, "UNSIT", "Pulls a menu to select who to unsit", 
 	-240, "OPTIONS", "a global option string", 
 	-241, "FACIALS_FLAG", "any string received by the slave with arb number -241 will be assigned to the permissions.  This should either be 'on' or 'off'.", 
 	-800, "DOMENU", "call to menu to pull menu dialog.", 
